@@ -1,12 +1,9 @@
 package com.firstspringbootproject.firstspringbootproject.controller;
 
 import com.firstspringbootproject.firstspringbootproject.dto.ProductDTO;
-import com.firstspringbootproject.firstspringbootproject.mapper.ProductMapper;
-import com.firstspringbootproject.firstspringbootproject.model.Product;
-import com.firstspringbootproject.firstspringbootproject.repository.ProductRepository;
+import com.firstspringbootproject.firstspringbootproject.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,42 +11,30 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private ProductMapper productMapper;
+    private ProductService productService;
 
     @GetMapping
     public Page<ProductDTO> getAllProducts(@RequestParam(defaultValue = "0") int page) {
-        Page<Product> products = productRepository.findAll(PageRequest.of(page, 6));
-        return products.map(productMapper::toDTO);
-    }
-
-    @PostMapping
-    public Product createProduct(@RequestBody Product product) {
-        return productRepository.save(product);
+        return productService.getAllProducts(page);
     }
 
     @GetMapping("/{id}")
-    public Product getProductById(@PathVariable Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+    public ProductDTO getProductById(@PathVariable Long id) {
+        return productService.getProductById(id);
+    }
+
+    @PostMapping
+    public ProductDTO createProduct(@RequestBody ProductDTO productDTO) {
+        return productService.createProduct(productDTO);
     }
 
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @RequestBody Product productDetails) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        product.setName(productDetails.getName());
-        product.setPrice(productDetails.getPrice());
-        return productRepository.save(product);
+    public ProductDTO updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO) {
+        return productService.updateProduct(id, productDTO);
     }
 
     @DeleteMapping("/{id}")
     public void deleteProduct(@PathVariable Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-        productRepository.delete(product);
+        productService.deleteProduct(id);
     }
 }
